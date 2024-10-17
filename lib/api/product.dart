@@ -1,36 +1,47 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+
+import 'package:cred/helper/http_helper.dart';
 
 class Product {
-  final String _baseUrl = "https://api.yourservice.com"; // Change to your actual base URL
+  final HttpHelper httpHelper;
+
+  Product(String baseUrl, String apiKey, List<String> allowedSHA1Certificates)
+      : httpHelper = HttpHelper(baseUrl, apiKey, allowedSHA1Certificates);
 
   Future<List<dynamic>> fetchAllProducts() async {
-    final response = await http.get(Uri.parse('$_baseUrl/products'));
+    try {
+      final response = await httpHelper.get('/products');
 
-    if (response.statusCode == 200) {
-      return json.decode(response.body);
-    } else {
-      throw Exception("Failed to load products: ${response.body}");
+      if (response.statusCode == 200) {
+        return List.from(response.bodyBytes);
+      } else {
+        throw Exception("Failed to fetch products: ${response.body}");
+      }
+    } catch (e) {
+      throw Exception("Error fetching products: $e");
     }
   }
 
   Future<void> addProduct(Map<String, dynamic> productData) async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/products'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode(productData),
-    );
+    try {
+      final response = await httpHelper.post('/products', productData);
 
-    if (response.statusCode != 201) {
-      throw Exception("Failed to add product: ${response.body}");
+      if (response.statusCode != 201) {
+        throw Exception("Failed to add product: ${response.body}");
+      }
+    } catch (e) {
+      throw Exception("Error adding product: $e");
     }
   }
 
   Future<void> deleteProduct(String productId) async {
-    final response = await http.delete(Uri.parse('$_baseUrl/products/$productId'));
+    try {
+      final response = await httpHelper.delete('/products/$productId');
 
-    if (response.statusCode != 200) {
-      throw Exception("Failed to delete product: ${response.body}");
+      if (response.statusCode != 200) {
+        throw Exception("Failed to delete product: ${response.body}");
+      }
+    } catch (e) {
+      throw Exception("Error deleting product: $e");
     }
   }
 }

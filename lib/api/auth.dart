@@ -1,37 +1,39 @@
-import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:cred/helper/http_helper.dart';
 
 class Auth {
-  final String _baseUrl = "https://api.yourservice.com"; // Change to your actual base URL
+  final HttpHelper httpHelper;
+
+  Auth(String baseUrl, String apiKey, List<String> allowedSHA1Certificates)
+      : httpHelper = HttpHelper(baseUrl, apiKey, allowedSHA1Certificates);
 
   Future<void> login(String username, String password) async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/auth/login'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({'username': username, 'password': password}),
-    );
+    try {
+      final response = await httpHelper.post(
+        '/auth/login',
+        {'username': username, 'password': password},
+      );
 
-    if (response.statusCode == 200) {
-      // Handle successful login
-      print("Login successful: ${response.body}");
-    } else {
-      // Handle errors
-      throw Exception("Login failed: ${response.body}");
+      if (response.statusCode == 200) {
+        print("Login successful: ${response.body}");
+      } else {
+        throw Exception("Login failed: ${response.body}");
+      }
+    } catch (e) {
+      print("Error during login: $e");
     }
   }
 
   Future<void> logout() async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/auth/logout'),
-      headers: {'Content-Type': 'application/json'},
-    );
+    try {
+      final response = await httpHelper.post('/auth/logout', {});
 
-    if (response.statusCode == 200) {
-      // Handle successful logout
-      print("Logout successful: ${response.body}");
-    } else {
-      // Handle errors
-      throw Exception("Logout failed: ${response.body}");
+      if (response.statusCode == 200) {
+        print("Logout successful: ${response.body}");
+      } else {
+        throw Exception("Logout failed: ${response.body}");
+      }
+    } catch (e) {
+      print("Error during logout: $e");
     }
   }
 }
